@@ -4,6 +4,11 @@ import os
 import platform
 from wsgiref.util import FileWrapper
 
+import numpy as np
+from sklearn.cluster import DBSCAN
+from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
+
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -335,8 +340,11 @@ def index(request):
 
         print("수집완료.")
 
-        excel_buffer1 = io.BytesIO()
-        excel_buffer2 = io.BytesIO()
+        excel_buffer1 = io.BytesIO() # 기업명.xlsx
+        excel_buffer2 = io.BytesIO() # 기업명_vector.xlsx
+        excel_buffer3 = io.BytesIO() # 기업명_kmeans_10clusters.xlsx
+        vector_image_buffer = io.BytesIO() # 벡터 이미지 시각화
+        excel_buffer4 = io.BytesIO() # DBSCAN_CLUSTER.XLSX
 
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zipf:
@@ -412,6 +420,7 @@ def index(request):
 
                 df.to_excel(excel_buffer1, index=False)
                 print("{}.xlsx".format(i), "저장 완료")
+                # zip에 엑셀파일 추가
                 zipf.writestr("{}.xlsx".format(i), excel_buffer1.getvalue())
 
 
@@ -461,11 +470,160 @@ def index(request):
 
                 df_vector.to_excel(excel_buffer2, index=False)
                 print("{}_vectors.xlsx".format(o), "저장완료.")
+                # zip에 엑셀파일 추가
                 zipf.writestr("{}_vectors.xlsx".format(o), excel_buffer2.getvalue())
 
         # with open("{}.zip".format(org), "wb") as zip_file:
         #     zip_file.write(zip_buffer.getvalue())
         # return response
+
+# 자 perplexity must be less than n_samples 발생 잠깐 보류
+
+#             # K-Means 클러스터링
+#             for o in org:
+#                 print("{} {} K-Means 클러스터링 시작 {}".format("*" * 10, o, "*" * 10))
+#                 excel_name = excel_buffer2
+#                 df_org = pd.read_excel(excel_buffer1)
+#                 df_vector = pd.read_excel(excel_name)
+#                 '''
+#                 데이터 개수가 적으면 perplexity Error가 발생할 수 있습니다 !
+#                 이럴 경우에는 데이터의 개수(= 엑셀 파일의 행 개수)보다 1작은 값으로 perplexity 파라미터를 조정해주면 됩니다.
+#                 '''
+#                 m = TSNE(learning_rate=50, random_state=0)  # perplexity Error가 발생할 경우 perplexity = 데이터의 개수 - 1로 파라미터 설정
+#                 tsne_features = m.fit_transform(pd.DataFrame(df_vector))
+#                 df = pd.DataFrame()
+#                 df['x'] = tsne_features[:, 0]
+#                 df['y'] = tsne_features[:, 1]
+#
+#                 if len(df) <= n_clusters:
+#                     print("Repository 가 {}개 미만입니다.".format(n_clusters))
+#                     n_clusters = len(df) // 3
+#                     print("{}개의 Cluster로 군집화 시작합니다.".format(n_clusters))
+#                 else:
+#                     # 10개의 Cluster 지정
+#                     n_clusters = n_clusters
+#                 kmeans = KMeans(n_clusters=n_clusters, random_state=0)
+#                 # kmeans = KMeans(n_clusters=4,verbose = 1)
+#
+#                 # 모델에 fitting 하기
+#                 kmeans.fit(tsne_features)
+#
+#                 y_kmeans = kmeans.predict(tsne_features)
+#                 y_kmeans[0:10]  # 군집화 된 결과
+#
+# #
+#                 plt.scatter(np.array(tsne_features)[:, 0], np.array(tsne_features)[:, 1], c=y_kmeans, s=20,
+#                             cmap='viridis')
+#
+#                 centers = kmeans.cluster_centers_
+#                 plt.scatter(centers[:, 0], centers[:, 1], c='black', s=100, alpha=0.5)
+#                 plt.grid()
+#                 plt.title(excel_name)
+#
+#                 plt.savefig(vector_image_buffer, format='png')
+#                 plt.close()
+#
+#                 #zip에 이미지 추가
+#                 zipf.writestr("{}_vector.png".format(o), vector_image_buffer.getvalue())
+#
+#                 # plt.show()
+# #
+#
+#                 clustered_dic = {}
+#                 clustered_list = []
+#                 cluster_num = len(set(y_kmeans))
+#                 for idx, i in enumerate(y_kmeans):
+#                     if i not in clustered_dic:
+#                         clustered_dic[i] = [df_org['ProjectName'][idx]]
+#                     else:
+#                         clustered_dic[i].append(df_org['ProjectName'][idx])
+#                 clustered_dic = sorted(clustered_dic.items(), key=lambda x: x[0])
+#                 df_cluster = pd.DataFrame(clustered_dic, columns=['num', 'clusters'])
+#                 cluster_num = [len(i) for i in df_cluster['clusters']]
+#                 df_cluster['cluster_num'] = cluster_num
+#
+#                 # 군집화된 패키지들은 어떤 토픽들을 가지고 있을까?
+#                 topic_clustered_list = []
+#                 for i in df_cluster['clusters']:
+#                     temp_dic = {}
+#                     for j in i:
+#                         topics = list(
+#                             df_org[df_org['ProjectName'] == j]['Topics'].values[0].replace("[", "").replace("]",
+#                                                                                                             "").replace(
+#                                 "'", "").split(","))
+#                         for i in topics:
+#                             if len(i) == 0:
+#                                 continue
+#                             i = same_things(i.strip())
+#                             if i not in temp_dic:
+#                                 temp_dic[i] = 1
+#                             else:
+#                                 temp_dic[i] += 1
+#                     temp_dic = sorted(temp_dic.items(), key=lambda x: x[1], reverse=True)
+#                     topic_clustered_list.append(temp_dic[:15])
+#                 df_cluster['top_15_topics'] = topic_clustered_list
+#
+#                 df_cluster.to_excel(excel_buffer3, index=False)
+#                 print("{}_vectors.xlsx".format(o), "저장완료.")
+#                 #zip에 엑셀파일 추가
+#                 zipf.writestr("{}_kmeans_10clusters.xlsx".format(o), excel_buffer3.getvalue())
+#
+#                 # df_cluster.to_excel("{}_kmeans_10clusters.xlsx".format(o), index=False)
+#                 # print(df_cluster)
+#                 # print("{}_kmeans_10clusters.xlsx".format(o), "저장완료")
+#                 # print("*" * 50)
+
+            for o in org:
+                print("{} {} DBSCAN 클러스터링 시작 {}".format("*" * 10, o, "*" * 10))
+                df_org = pd.read_excel(excel_buffer1)
+                df_vector = pd.read_excel(excel_buffer2)
+                # eps 값을 조정해나가면서 클러스터링을 해야 더 정확한 결과가 나온다
+                dbscan = DBSCAN(eps=0.3)
+                dbscan_cluster = dbscan.fit_predict(df_vector)
+                dbscan_cluster
+                dbscan_clustered_dic = {}
+                dbscan_clustered_list = []
+                dbscan_cluster_num = len(set(dbscan_cluster))
+
+                for idx, i in enumerate(dbscan_cluster):
+                    if i not in dbscan_clustered_dic:
+                        dbscan_clustered_dic[i] = [df_org['ProjectName'][idx]]
+                    else:
+                        dbscan_clustered_dic[i].append(df_org['ProjectName'][idx])
+
+                # 클러스터링이 된 패키지들
+                # 20개의 군집으로 생성
+
+                dbscan_clustered_dic = sorted(dbscan_clustered_dic.items(), key=lambda x: x[0])
+
+                df_dbscan_cluster = pd.DataFrame(dbscan_clustered_dic, columns=['num', 'clusters'])
+                dbscan_cluster_num = [len(i) for i in df_dbscan_cluster['clusters']]
+                df_dbscan_cluster['cluster_num'] = dbscan_cluster_num
+                topic_dbscan_clustered_list = []
+                for i in df_dbscan_cluster['clusters']:
+                    temp_dic = {}
+                    for j in i:
+                        topics = df_org[df_org['ProjectName'] == j]['Topics'].values[0].replace("[", "").replace("]",
+                                                                                                                 "").replace(
+                            "'", "").strip().split(",")
+                        for i in topics:
+                            if len(i) == 0:
+                                continue
+                            i = same_things(i)
+                            if i not in temp_dic:
+                                temp_dic[i] = 1
+                            else:
+                                temp_dic[i] += 1
+                    temp_dic = sorted(temp_dic.items(), key=lambda x: x[1], reverse=True)
+                    #     print(temp_dic[:15]) # 상위 15개만 보여줌
+                    #     print()
+                    topic_dbscan_clustered_list.append(temp_dic[:15])
+                df_dbscan_cluster['top_15_topics'] = topic_dbscan_clustered_list
+
+                df_dbscan_cluster.to_excel(excel_buffer4, index=False)
+                print("{}_DBSCAN_clusters.xlsx".format(o), "저장완료.")
+                # zip에 엑셀파일 추가
+                zipf.writestr("{}_DBSCAN_clusters.xlsx".format(o), excel_buffer4.getvalue())
 
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer, content_type='application/zip')
@@ -475,7 +633,7 @@ def index(request):
         # )
 
         filename = form.cleaned_data['keyword'] + '.zip'  # 폼 데이터에서 파일 이름 가져오기
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'.format(org)
 
         return response
 
