@@ -1,0 +1,203 @@
+{#<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>#}
+{#<script>#}
+{#  $(document).ready(function() {#}
+{#    $('form').submit(function(event) {#}
+{#      event.preventDefault(); // 기본 form 제출 동작 방지#}
+{##}
+{#      // alert 표시#}
+{#      alert('다운로드 진행 중입니다. 다운로드 완료시 로컬 다운로드 폴더에서 확인할 수 있습니다.');#}
+{##}
+{#      // AJAX 요청#}
+{#      $.ajax({#}
+{#        type: 'POST',#}
+{#        url: '{% url 'ai_bigtech_company:index' %}',#}
+{#        data: $(this).serialize(),#}
+{#        success: function(response) {#}
+{#          // 다운로드 로직 수행#}
+{#          window.location.href = '{% url 'ai_bigtech_company:index' %}';  // 다운로드 URL로 이동#}
+{#        },#}
+{#        error: function(error) {#}
+{#          console.log(error);#}
+{#        }#}
+{#      });#}
+{#    });#}
+{#  });#}
+{#</script>#}
+{##}
+{#<!DOCTYPE html>#}
+{#<html>#}
+{#<head>#}
+{#  <title>입력 폼</title>#}
+{#</head>#}
+{#<body>#}
+{#  <form action="{% url 'ai_bigtech_company:index' %}" method="POST"> <!--bigtech_storage_analysis_form 해당 별칭을 갖는 -->#}
+{#    {% csrf_token %}#}
+{#    {{ form|linebreaks }}#}
+{#    <input type="submit" value="submit" name="submit">#}
+{#  </form>#}
+{##}
+{#  {% if form.errors %}#}
+{#  <script>#}
+{#    // 오류 메시지를 확인하고 alert로 표시#}
+{#    var errorMessage = "{{ form.errors|first }}";#}
+{#    alert(errorMessage);#}
+{#  </script>#}
+{#  {% endif %}#}
+{#</body>#}
+{#</html>#}
+
+{#<!DOCTYPE html>#}
+{#<html>#}
+{#<head>#}
+{#  <title>입력 폼</title>#}
+{#</head>#}
+{#<body>#}
+{#  <form id="myForm" action="{% url 'ai_bigtech_company:index' %}" method="POST"> <!--bigtech_storage_analysis_form 해당 별칭을 갖는 -->#}
+{#    {% csrf_token %}#}
+{#    {{ form|linebreaks }}#}
+{#    <input type="submit" value="submit" name="submit">#}
+{#  </form>#}
+{##}
+{#  {% if form.errors %}#}
+{#  <script>#}
+{#    // 오류 메시지를 확인하고 alert로 표시#}
+{#    var errorMessage = "{{ form.errors|first }}";#}
+{#    alert(errorMessage);#}
+{#  </script>#}
+{#  {% endif %}#}
+{##}
+{#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>#}
+{#    <script>#}
+{#      $(document).ready(function() {#}
+{#        $('form').submit(function(event) {#}
+{#          event.preventDefault(); // 기본 폼 제출 동작 방지#}
+{##}
+{#          // 다운로드 진행 중임을 알리는 알림 표시#}
+{#          alert('데이터를 다운로드 중입니다. 다운로드가 완료되면 로컬 다운로드 폴더에서 확인할 수 있습니다.');#}
+{##}
+{#          // AJAX 요청 전송#}
+{#          $.ajax({#}
+{#            type: 'POST',#}
+{#            url: '{% url 'ai_bigtech_company:index' %}',#}
+{#            data: $(this).serialize(),#}
+{#            success: function(response) {#}
+{#              var filename = 'bigtech_data.zip'; // 기본 파일 이름#}
+{##}
+{#              // 뷰에서 전달된 파일 이름 사용 (예: 'filename' 필드에서 받아옴)#}
+{#              var receivedData = $(response).find('#filename').text(); // 예상되는 요소의 ID에 맞춰 업데이트#}
+{#              if (receivedData) {#}
+{#                filename = receivedData;#}
+{#              }#}
+{##}
+{#              // 임시 링크 엘리먼트를 생성하여 파일 다운로드 트리거#}
+{#              var link = document.createElement('a');#}
+{#              link.href = window.URL.createObjectURL(response);#}
+{#              link.download = filename;#}
+{#              link.click();#}
+{##}
+{#              // 임시 링크 정리#}
+{#              window.URL.revokeObjectURL(link.href);#}
+{#            },#}
+{#            error: function(error) {#}
+{#              console.log(error);#}
+{#            }#}
+{#        });#}
+{#      });#}
+{#    });#}
+{#  </script>#}
+{#</body>#}
+{#</html>#}
+
+
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>입력 폼</title>
+</head>
+<body>
+  <form id="myForm" action="{% url 'ai_bigtech_company:index' %}" method="POST">
+    {% csrf_token %}
+    <input type="text" name="clusterNum" placeholder="클러스터 개수">
+    <input type="text" name="keyword" placeholder="키워드">
+    <input type="submit" value="Submit">
+  </form>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('form').submit(function(event) {
+        event.preventDefault(); // 기본 폼 제출 동작 방지
+
+        // AJAX 요청 전송
+        $.ajax({
+          type: 'POST',
+          url: '{% url 'ai_bigtech_company:index' %}',
+          data: $(this).serialize(),
+          xhrFields: {
+            responseType: 'blob' // 응답 데이터를 Blob으로 설정
+          },
+          success: function(response) {
+            // 파일 다운로드
+            var downloadLink = document.createElement('a');
+            var blobUrl = window.URL.createObjectURL(response);
+            downloadLink.href = blobUrl;
+            downloadLink.download = 'result.zip';
+            downloadLink.click();
+
+            // Blob URL 해제
+            window.URL.revokeObjectURL(blobUrl);
+          },
+          error: function(error) {
+            console.log(error);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+{#<!-- index.html -->#}
+{#<!DOCTYPE html>#}
+{#<html>#}
+{#<head>#}
+{#  <title>입력 폼</title>#}
+{#</head>#}
+{#<body>#}
+{#  <form id="myForm" action="{% url 'ai_bigtech_company:index' %}" method="POST">#}
+{#    {% csrf_token %}#}
+{#    <input type="text" name="clusterNum" placeholder="클러스터 개수">#}
+{#    <input type="text" name="keyword" placeholder="키워드">#}
+{#    <input type="submit" value="Submit">#}
+{#  </form>#}
+{##}
+{#  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>#}
+{#  <script>#}
+{#    $(document).ready(function() {#}
+{#      $('form').submit(function(event) {#}
+{#        event.preventDefault(); // 기본 폼 제출 동작 방지#}
+{##}
+{#        // AJAX 요청 전송#}
+{#        $.ajax({#}
+{#          type: 'POST',#}
+{#          url: '{% url 'ai_bigtech_company:index' %}',#}
+{#          data: $(this).serialize(),#}
+{#          success: function(response) {#}
+{#            // 파일 다운로드를 위한 링크로 리다이렉트#}
+{#            window.location.href = response.url;#}
+{#          },#}
+{#          error: function(error) {#}
+{#            console.log(error);#}
+{#          }#}
+{#        });#}
+{#      });#}
+{#    });#}
+{#  </script>#}
+{#</body>#}
+{#</html>#}
