@@ -129,6 +129,8 @@
       $('form').submit(function(event) {
         event.preventDefault(); // 기본 폼 제출 동작 방지
 
+        var keyword = $('input[name="keyword"]').val();
+
         // AJAX 요청 전송
         $.ajax({
           type: 'POST',
@@ -138,11 +140,12 @@
             responseType: 'blob' // 응답 데이터를 Blob으로 설정
           },
           success: function(response) {
+            var filename = keyword+'.zip'
             // 파일 다운로드
             var downloadLink = document.createElement('a');
             var blobUrl = window.URL.createObjectURL(response);
             downloadLink.href = blobUrl;
-            downloadLink.download = 'result.zip';
+            downloadLink.download = filename;
             downloadLink.click();
 
             // Blob URL 해제
