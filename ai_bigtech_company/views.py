@@ -326,8 +326,7 @@ def index(request):
                 res.raise_for_status()
                 html = res.text
                 soup = BeautifulSoup(html, "html.parser")
-                for item in soup.find("div", attrs={"class": "org-repos repo-list"}).find_all("li", attrs={
-                    "class": "Box-row"}):
+                for item in soup.find("div", attrs={"class": "org-repos repo-list"}).find_all("li", attrs={"class": "Box-row"}):
                     #             print(item.a.get_text().strip())
                     item_temp.append(item.a.get_text().strip())
             org_dic[o] = item_temp
@@ -423,7 +422,7 @@ def index(request):
 
             # 기업 정보 벡터화
             for o in org:
-                df = pd.read_excel(excel_buffer1)
+                df = pd.read_excel(excel_buffer1.getvalue())
                 for idx, i in enumerate(df["Topics"]):
                     if len(i) == 2:
                         df.drop(index=idx, inplace=True)
@@ -480,8 +479,8 @@ def index(request):
             for o in org:
                 print("{} {} K-Means 클러스터링 시작 {}".format("*" * 10, o, "*" * 10))
                 # excel_name = "{}_vectors.xlsx".format(o)
-                df_org = pd.read_excel(excel_buffer1)
-                df_vector = pd.read_excel(excel_buffer2)
+                df_org = pd.read_excel(excel_buffer1.getvalue())
+                df_vector = pd.read_excel(excel_buffer2.getvalue())
                 '''
                 데이터 개수가 적으면 perplexity Error가 발생할 수 있습니다 !
                 이럴 경우에는 데이터의 개수(= 엑셀 파일의 행 개수)보다 1작은 값으로 perplexity 파라미터를 조정해주면 됩니다.
@@ -571,8 +570,8 @@ def index(request):
 
             for o in org:
                 print("{} {} DBSCAN 클러스터링 시작 {}".format("*" * 10, o, "*" * 10))
-                df_org = pd.read_excel(excel_buffer1)
-                df_vector = pd.read_excel(excel_buffer2)
+                df_org = pd.read_excel(excel_buffer1.getvalue())
+                df_vector = pd.read_excel(excel_buffer2.getvalue())
                 # eps 값을 조정해나가면서 클러스터링을 해야 더 정확한 결과가 나온다
                 dbscan = DBSCAN(eps=0.3)
                 dbscan_cluster = dbscan.fit_predict(df_vector)
