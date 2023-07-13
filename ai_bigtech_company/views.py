@@ -1,8 +1,5 @@
 import io
 import zipfile
-import os
-import platform
-from wsgiref.util import FileWrapper
 
 import numpy as np
 from sklearn.cluster import DBSCAN
@@ -13,12 +10,10 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import xlsxwriter
-import openpyxl
 
 from matplotlib import pyplot as plt
 
-from django.http import HttpResponse, HttpResponseBadRequest, response, StreamingHttpResponse
+from django.http import HttpResponse
 
 from django.shortcuts import render
 
@@ -492,12 +487,7 @@ def index(request):
                 이럴 경우에는 데이터의 개수(= 엑셀 파일의 행 개수)보다 1작은 값으로 perplexity 파라미터를 조정해주면 됩니다.
                 '''
                 # 원래 코드
-                # m = TSNE(learning_rate=50, random_state=0)  # perplexity Error가 발생할 경우 perplexity = 데이터의 개수 - 1로 파라미터 설정
-                # tsne_features = m.fit_transform(pd.DataFrame(df_vector))
-
-                perplexity_value = min(len(df_vector) - 1, 30)  # perplexity 값 설정
-                m = TSNE(perplexity=perplexity_value, learning_rate=50, random_state=0)
-
+                m = TSNE(learning_rate=50, random_state=0)  # perplexity Error가 발생할 경우 perplexity = 데이터의 개수 - 1로 파라미터 설정
                 tsne_features = m.fit_transform(pd.DataFrame(df_vector))
 
                 df = pd.DataFrame()
